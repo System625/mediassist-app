@@ -113,12 +113,12 @@ const VideoCall: React.FC = () => {
     fetchData();
   }, [user]);
 
-  const removeCallFromPatient = async () => {
+  const removeCallFromPatient = useCallback(async () => {
     if (role === "doctor" && patientId) {
       const patientDocRef = doc(db, "users", patientId);
       await updateDoc(patientDocRef, { call: "" });
     }
-  };
+  }, [role, patientId]);
 
   useEffect(() => {
     if (name && role) {
@@ -153,7 +153,7 @@ const VideoCall: React.FC = () => {
     } else {
       router.push("/");
     }
-  }, [role, router]);
+  }, [role, router, removeCallFromPatient]);
 
   if (!client) {
     return (

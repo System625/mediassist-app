@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -53,105 +53,7 @@ export default function EmergencyComponent() {
     libraries: ["places", "geometry"],
   });
 
-  useEffect(() => {
-    if (isDialogOpen && emergencyStatus === "finding") {
-      getUserLocation();
-    }
-  }, [isDialogOpen, emergencyStatus]);
-
-  useEffect(() => {
-    const findNearestHospital = async () => {
-      if (!userLocation || !isLoaded) return;
-
-      const hospitalsRef = collection(db, "verifiedHospitals");
-      const q = query(hospitalsRef);
-
-      try {
-        const querySnapshot = await getDocs(q);
-        const hospitals: Hospital[] = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name,
-          placeId: doc.id,
-        }));
-
-        const nearestHospital = await findNearestHospitalUsingPlacesAPI(
-          hospitals
-        );
-
-        if (nearestHospital) {
-          setNearestHospital(nearestHospital);
-          setEmergencyStatus("notifying");
-          notifyHospital(nearestHospital);
-        } else {
-          setEmergencyStatus("idle");
-          alert("No nearby hospitals found within 10km.");
-        }
-      } catch (error) {
-        console.error("Error finding nearest hospital:", error);
-        setEmergencyStatus("idle");
-        alert(
-          "An error occurred while finding nearby hospitals. Please try again."
-        );
-      }
-    };
-
-    if (isDialogOpen && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (countdown === 0 && emergencyStatus === "finding") {
-      findNearestHospital();
-    }
-  }, [isDialogOpen, countdown, emergencyStatus, isLoaded, userLocation]);
-
-  useEffect(() => {
-    if (emergencyStatus === "finding" || emergencyStatus === "notifying") {
-      const interval = setInterval(() => {
-        setProgress((prevProgress) =>
-          prevProgress >= 1000 ? 0 : prevProgress + 10
-        );
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [emergencyStatus]);
-
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      if (user?.uid) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setUserInfo({
-            name: data.name || "Unknown",
-            phoneNumber: data.phoneNumber || "Unknown",
-          });
-        }
-      }
-    };
-    fetchUserInfo();
-  }, [user]);
-
-  const getUserLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => setUserLocation(position.coords),
-        (error) => {
-          console.error("Error getting location:", error);
-          setEmergencyStatus("idle");
-          alert(
-            "Unable to get your location. Please enable location services and try again."
-          );
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-      setEmergencyStatus("idle");
-      alert(
-        "Geolocation is not supported by your browser. Please use a different device or browser."
-      );
-    }
-  };
-
-  const findNearestHospitalUsingPlacesAPI = async (
+  const findNearestHospitalUsingPlacesAPI = useCallback(async (
     hospitals: Hospital[]
   ): Promise<Hospital | null> => {
     if (!isLoaded || !google.maps.places) {
@@ -213,9 +115,9 @@ export default function EmergencyComponent() {
     return sortedHospitals.length > 0 && sortedHospitals[0]!.distance <= 10
       ? sortedHospitals[0]!
       : null;
-  };
+  }, [isLoaded, userLocation]);
 
-  const notifyHospital = async (hospital: Hospital) => {
+  const notifyHospital = useCallback(async (hospital: Hospital) => {
     if (!user?.uid) return;
 
     const userDocRef = doc(db, "users", user.uid);
@@ -253,6 +155,104 @@ export default function EmergencyComponent() {
       setEmergencyStatus("idle");
       alert(
         "Failed to notify the hospital. Please try again or contact emergency services directly."
+      );
+    }
+  }, [user?.uid, userLocation]);
+
+  useEffect(() => {
+    if (isDialogOpen && emergencyStatus === "finding") {
+      getUserLocation();
+    }
+  }, [isDialogOpen, emergencyStatus]);
+
+  useEffect(() => {
+    const findNearestHospital = async () => {
+      if (!userLocation || !isLoaded) return;
+
+      const hospitalsRef = collection(db, "verifiedHospitals");
+      const q = query(hospitalsRef);
+
+      try {
+        const querySnapshot = await getDocs(q);
+        const hospitals: Hospital[] = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+          placeId: doc.id,
+        }));
+
+        const nearestHospital = await findNearestHospitalUsingPlacesAPI(
+          hospitals
+        );
+
+        if (nearestHospital) {
+          setNearestHospital(nearestHospital);
+          setEmergencyStatus("notifying");
+          notifyHospital(nearestHospital);
+        } else {
+          setEmergencyStatus("idle");
+          alert("No nearby hospitals found within 10km.");
+        }
+      } catch (error) {
+        console.error("Error finding nearest hospital:", error);
+        setEmergencyStatus("idle");
+        alert(
+          "An error occurred while finding nearby hospitals. Please try again."
+        );
+      }
+    };
+
+    if (isDialogOpen && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0 && emergencyStatus === "finding") {
+      findNearestHospital();
+    }
+  }, [isDialogOpen, countdown, emergencyStatus, isLoaded, userLocation, findNearestHospitalUsingPlacesAPI, notifyHospital]);
+
+  useEffect(() => {
+    if (emergencyStatus === "finding" || emergencyStatus === "notifying") {
+      const interval = setInterval(() => {
+        setProgress((prevProgress) =>
+          prevProgress >= 1000 ? 0 : prevProgress + 10
+        );
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [emergencyStatus]);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (user?.uid) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setUserInfo({
+            name: data.name || "Unknown",
+            phoneNumber: data.phoneNumber || "Unknown",
+          });
+        }
+      }
+    };
+    fetchUserInfo();
+  }, [user]);
+
+  const getUserLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => setUserLocation(position.coords),
+        (error) => {
+          console.error("Error getting location:", error);
+          setEmergencyStatus("idle");
+          alert(
+            "Unable to get your location. Please enable location services and try again."
+          );
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+      setEmergencyStatus("idle");
+      alert(
+        "Geolocation is not supported by your browser. Please use a different device or browser."
       );
     }
   };
