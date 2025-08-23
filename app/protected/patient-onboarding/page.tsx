@@ -268,7 +268,7 @@ export default function MedicalOnboarding() {
     >
       <div className="hidden md:block w-1/2 bg-blue-500 rounded-3xl relative">
         <Image
-          src="/downloadbg.jpeg"
+          src="/downloadbg.webp"
           alt="Sign-in image"
           className="h-full w-full object-cover rounded-3xl"
           objectFit="cover"

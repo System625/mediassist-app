@@ -103,6 +103,7 @@ export default function PatientSettingsPage() {
                   id="mobile-notifications"
                   checked={settings.mobileNotifications}
                   onCheckedChange={handleMobileNotificationsChange}
+                  className="data-[state=checked]:bg-primary"
                 />
               </div>
             </div>

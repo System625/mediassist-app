@@ -71,29 +71,29 @@ export const HeroParallax = ({
         className=""
       >
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-4 md:space-x-8 lg:space-x-12 mb-20 overflow-x-hidden">
-          {firstRow.map((product) => (
+          {firstRow.map((product, index) => (
             <ProductCard
               product={product}
               translate={translateX}
-              key={product.title}
+              key={`firstRow-${product.title}-${index}`}
             />
           ))}
         </motion.div>
         <motion.div className="flex flex-row mb-20 space-x-4 md:space-x-8 lg:space-x-12 overflow-x-hidden">
-          {secondRow.map((product) => (
+          {secondRow.map((product, index) => (
             <ProductCard
               product={product}
               translate={translateXReverse}
-              key={product.title}
+              key={`secondRow-${product.title}-${index}`}
             />
           ))}
         </motion.div>
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-4 md:space-x-8 lg:space-x-12 overflow-x-hidden">
-          {thirdRow.map((product) => (
+          {thirdRow.map((product, index) => (
             <ProductCard
               product={product}
               translate={translateX}
-              key={product.title}
+              key={`thirdRow-${product.title}-${index}`}
             />
           ))}
         </motion.div>
@@ -135,7 +135,6 @@ export const ProductCard = ({
       whileHover={{
         y: -20,
       }}
-      key={product.title}
       className="group/product h-96 w-full md:w-1/2 lg:w-[40rem] mx-auto relative flex-shrink-0"
     >
       <Link

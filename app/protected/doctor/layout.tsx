@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { signOut } from "firebase/auth";
+import { useLogoutModal } from "@/components/ui/logout-modal";
 import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -43,6 +43,7 @@ export default function DoctorLayout({
   const { user, role } = useAuthContext();
   const uid = user?.uid;
   const router = useRouter();
+  const { openModal, LogoutModal } = useLogoutModal();
 
   useEffect(() => {
     if (!user) {
@@ -183,10 +184,7 @@ export default function DoctorLayout({
             </div>
             <div
               className="flex items-center justify-center cursor-pointer"
-              onClick={() => {
-                signOut(auth);
-                router.push("/");
-              }}
+              onClick={openModal}
             >
               <DoorClosed className="h-6 w-6" />
               <DoorOpen className="h-6 w-6 absolute opacity-0 group-hover:opacity-100" />
@@ -235,10 +233,7 @@ export default function DoctorLayout({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => {
-                    signOut(auth);
-                    router.push("/");
-                  }}
+                  onClick={openModal}
                 >
                   Logout
                 </DropdownMenuItem>
@@ -250,6 +245,7 @@ export default function DoctorLayout({
           <div className="flex-1 overflow-y-auto">{children}</div>
         </div>
       </div>
+      <LogoutModal />
     </div>
   );
 }

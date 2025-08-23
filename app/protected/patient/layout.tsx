@@ -13,7 +13,7 @@ import {
 import EmergencyComponent from "@/components/ui/emergencyComponent";
 import { useAuthContext } from "@/context/AuthContext";
 import { auth, db } from "@/firebase/config";
-import { signOut } from "firebase/auth";
+import { useLogoutModal } from "@/components/ui/logout-modal";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import {
   Bell,
@@ -47,6 +47,7 @@ export default function PatientLayout({
   const { user, role } = useAuthContext();
   const uid = user?.uid;
   const router = useRouter();
+  const { openModal, LogoutModal } = useLogoutModal();
 
   useEffect(() => {
     if (!uid) return;
@@ -221,10 +222,7 @@ export default function PatientLayout({
               </div>
               <button
                 className="flex items-center justify-center cursor-pointer p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 group"
-                onClick={() => {
-                  signOut(auth);
-                  router.push("/");
-                }}
+                onClick={openModal}
                 title="Sign out"
               >
                 <DoorClosed className="h-5 w-5 text-gray-600 group-hover:text-red-600 transition-colors" />
@@ -276,10 +274,7 @@ export default function PatientLayout({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => {
-                    router.push("/");
-                    // signOut(auth);
-                  }}>
+                  onClick={openModal}>
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -292,6 +287,7 @@ export default function PatientLayout({
           <ChatComponent />
         </div>
       </div>
+      <LogoutModal />
     </div>
   );
 }

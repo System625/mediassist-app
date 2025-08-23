@@ -148,7 +148,7 @@ export default function DoctorAppointmentsPage() {
                 <TableCell>
                   <button
                     onClick={() => handleStartMeeting(appointment)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                    className="bg-primary text-white px-4 py-2 rounded"
                   >
                     Start Meeting
                   </button>
