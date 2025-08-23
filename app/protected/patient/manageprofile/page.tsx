@@ -2,6 +2,7 @@
 import { useAuthContext } from '@/context/AuthContext';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 
 
@@ -110,12 +111,9 @@ const UserProfile: React.FC = () => {
           />
         </div>
 
-        <button
-          type="submit"
-          className="w-full py-2 px-4 bg-purple-600 text-white font-bold rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-        >
+        <Button type="submit" className="w-full">
           Save Changes
-        </button>
+        </Button>
       </form>
     </div>
   );

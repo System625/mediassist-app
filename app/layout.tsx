@@ -1,19 +1,14 @@
 import "./globals.css";
 
 import { AuthContextProvider } from "@/context/AuthContext";
-import { Libre_Franklin, Rubik } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 
-const libre_franklin = Libre_Franklin({
+const poppins = Poppins({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-libre_franklin",
-});
-
-const rubik = Rubik({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-rubik",
+  variable: "--font-poppins",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata = {
@@ -28,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={libre_franklin.variable + " " + rubik.variable}>
+      <body className={poppins.variable + " font-poppins"}>
         <AuthContextProvider>{children}</AuthContextProvider>
         <Toaster />
       </body>

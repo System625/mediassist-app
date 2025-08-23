@@ -264,7 +264,7 @@ export default function Profile() {
                 />
               </div>
             </div>
-            <Button type="submit" className="cursor-pointer">
+            <Button type="submit">
               Save
             </Button>
           </div>

@@ -13,6 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useAuthContext } from "@/context/AuthContext";
 import { db } from "@/firebase/config";
 import {
@@ -24,17 +30,18 @@ import {
   getDocs,
   updateDoc,
 } from "firebase/firestore";
-import { PlusCircle, X } from "lucide-react";
+import { CalendarDays, PlusCircle, X } from "lucide-react";
 import Image from "next/image";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 
 type Medication = {
   name: string;
   frequency: string;
   dosage: string;
-  startDate: string;
-  endDate: string;
+  startDate: Date | undefined;
+  endDate: Date | undefined;
   times: string[];
 };
 
@@ -70,8 +77,8 @@ export default function MedicalOnboarding() {
         name: "",
         frequency: "",
         dosage: "",
-        startDate: "",
-        endDate: "",
+        startDate: undefined,
+        endDate: undefined,
         times: [],
       },
     ],
@@ -120,8 +127,8 @@ export default function MedicalOnboarding() {
           name: "",
           frequency: "",
           dosage: "",
-          startDate: "",
-          endDate: "",
+          startDate: undefined,
+          endDate: undefined,
           times: [],
         },
       ],
@@ -140,7 +147,7 @@ export default function MedicalOnboarding() {
   const updateMedication = (
     index: number,
     field: keyof Medication,
-    value: string | string[]
+    value: string | string[] | Date | undefined
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -165,7 +172,13 @@ export default function MedicalOnboarding() {
       if (Array.isArray(field)) {
         return field.length > 0;
       }
-      return field.trim() !== "";
+      if (field instanceof Date) {
+        return true;
+      }
+      if (typeof field === 'string') {
+        return field.trim() !== "";
+      }
+      return field !== undefined && field !== null;
     }).length;
     const totalFields = fields.length;
     const newProgress = Math.round((filledFields / totalFields) * 100);
@@ -201,7 +214,11 @@ export default function MedicalOnboarding() {
           pastSurgeries: formData.pastSurgeries,
           phoneNumber: formData.phoneNumber,
           weight: formData.weight,
-          medications: [...formData.medications],
+          medications: formData.medications.map(med => ({
+            ...med,
+            startDate: med.startDate ? format(med.startDate, "yyyy-MM-dd") : "",
+            endDate: med.endDate ? format(med.endDate, "yyyy-MM-dd") : "",
+          })),
           onboarded: true,
           hospitalNumber,
         };
@@ -216,7 +233,11 @@ export default function MedicalOnboarding() {
         });
 
         for (const medication of formData.medications) {
-          await addDoc(medicationsCollectionRef, medication);
+          await addDoc(medicationsCollectionRef, {
+            ...medication,
+            startDate: medication.startDate ? format(medication.startDate, "yyyy-MM-dd") : "",
+            endDate: medication.endDate ? format(medication.endDate, "yyyy-MM-dd") : "",
+          });
         }
 
         router.push("/protected/patient");
@@ -446,36 +467,68 @@ export default function MedicalOnboarding() {
                             }
                           />
                         </div>
-                        <div className="flex w-full space-x-2 justify-between ">
+                        <div className="flex w-full space-x-2 justify-between">
                           <div className="w-1/2">
-                            <Label htmlFor="endDate">Start Date</Label>
-                            <Input
-                              type="date"
-                              placeholder="Start Date"
-                              value={medication.startDate}
-                              onChange={(e) =>
-                                updateMedication(
-                                  index,
-                                  "startDate",
-                                  e.target.value
-                                )
-                              }
-                            />
+                            <Label>Start Date</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start text-left font-normal"
+                                >
+                                  <CalendarDays className="mr-2 h-4 w-4" />
+                                  {medication.startDate ? (
+                                    format(medication.startDate, "PPP")
+                                  ) : (
+                                    <span>Pick a start date</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={medication.startDate}
+                                  onSelect={(date) =>
+                                    updateMedication(index, "startDate", date)
+                                  }
+                                  captionLayout="dropdown"
+                                  fromYear={1990}
+                                  toYear={2035}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
                           </div>
                           <div className="w-1/2">
-                            <Label htmlFor="endDate">End Date</Label>
-                            <Input
-                              type="date"
-                              placeholder="End Date"
-                              value={medication.endDate}
-                              onChange={(e) =>
-                                updateMedication(
-                                  index,
-                                  "endDate",
-                                  e.target.value
-                                )
-                              }
-                            />
+                            <Label>End Date</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start text-left font-normal"
+                                >
+                                  <CalendarDays className="mr-2 h-4 w-4" />
+                                  {medication.endDate ? (
+                                    format(medication.endDate, "PPP")
+                                  ) : (
+                                    <span>Pick an end date</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={medication.endDate}
+                                  onSelect={(date) =>
+                                    updateMedication(index, "endDate", date)
+                                  }
+                                  captionLayout="dropdown"
+                                  fromYear={1990}
+                                  toYear={2035}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
                           </div>
                         </div>
                         {medication.times.map((time, timeIndex) => (

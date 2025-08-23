@@ -23,20 +23,27 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("patient");
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
   const handleForm = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
+    setLoading(true);
     const { result, error } = await signUp(email, password, role);
     if (error) {
       toast.error("Sign up failed, please try again!");
+      setLoading(false);
       return console.log(error);
     }
 
     console.log(result);
     toast.success("Sign up successful!");
-    return router.push("/protected/doctor");
+    if (role === "patient") {
+      return router.push("/protected/patient-onboarding");
+    } else {
+      return router.push("/protected/doctor-onboarding");
+    }
   };
 
   return (
@@ -110,8 +117,8 @@ export default function Page() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full">
-              Sign up
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing up..." : "Sign up"}
             </Button>
           </form>
           <div className="text-center">

@@ -13,14 +13,17 @@ import { toast } from "react-hot-toast";
 export default function Page() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
   const handleForm = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
+    setLoading(true);
     const { result, error } = await signIn(email, password);
     if (error) {
       toast.error("Sign in failed, please try again!");
+      setLoading(false);
       return console.log(error);
     }
 
@@ -78,8 +81,8 @@ export default function Page() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full">
-              Sign in
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
           <div className="text-center">

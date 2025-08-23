@@ -19,6 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Table,
   TableHeader,
@@ -34,7 +40,8 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { SparkleIcon } from "lucide-react";
+import { CalendarDays, SparkleIcon } from "lucide-react";
+import { format } from "date-fns";
 
 interface Medication {
   name: string;
@@ -51,8 +58,8 @@ interface FormValues {
   dosage: string;
   frequency: string;
   pharmacyContact: string;
-  startDate: string;
-  endDate: string;
+  startDate: Date | undefined;
+  endDate: Date | undefined;
   times: string[];
 }
 
@@ -64,8 +71,8 @@ const medicationSchema = z.object({
     .string()
     .length(11, { message: "Pharmacy contact must be 11 digits." })
     .regex(/^\d+$/, "Pharmacy contact must only contain digits."),
-  startDate: z.string().min(1, { message: "Start date is required." }),
-  endDate: z.string().min(1, { message: "End date is required." }),
+  startDate: z.date({ required_error: "Start date is required." }),
+  endDate: z.date({ required_error: "End date is required." }),
   times: z.array(z.string()).nonempty(),
 });
 
@@ -83,8 +90,8 @@ export function MedicationsForm({
       dosage: "",
       frequency: "",
       pharmacyContact: "",
-      startDate: "",
-      endDate: "",
+      startDate: undefined,
+      endDate: undefined,
       times: [],
     },
   });
@@ -118,10 +125,15 @@ export function MedicationsForm({
     try {
       if (user) {
         const userDocRef = doc(db, "users", user.uid);
+        const medicationData = {
+          ...values,
+          startDate: values.startDate ? format(values.startDate, "yyyy-MM-dd") : "",
+          endDate: values.endDate ? format(values.endDate, "yyyy-MM-dd") : "",
+        };
         await updateDoc(userDocRef, {
-          medications: [...medications, values],
+          medications: [...medications, medicationData],
         });
-        setMedications([...medications, values]);
+        setMedications([...medications, medicationData]);
         form.reset();
       }
     } catch (error) {
@@ -258,7 +270,32 @@ export function MedicationsForm({
                         <FormItem>
                           <FormLabel>Start Date</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} />
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start text-left font-normal"
+                                >
+                                  <CalendarDays className="mr-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a start date</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" style={{ zIndex: 1001 }}>
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  captionLayout="dropdown"
+                                  fromYear={1990}
+                                  toYear={2035}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -271,7 +308,32 @@ export function MedicationsForm({
                         <FormItem>
                           <FormLabel>End Date</FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} />
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start text-left font-normal"
+                                >
+                                  <CalendarDays className="mr-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick an end date</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" style={{ zIndex: 1001 }}>
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  captionLayout="dropdown"
+                                  fromYear={1990}
+                                  toYear={2035}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
                           </FormControl>
                           <FormMessage />
                         </FormItem>

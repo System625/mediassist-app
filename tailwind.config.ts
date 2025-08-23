@@ -74,8 +74,8 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        rubik: ["var(--font-rubik)"],
-        libre_franklin: ["var(--font-libre_franklin)"],
+        poppins: ["var(--font-poppins)"],
+        sans: ["var(--font-poppins)", ...fontFamily.sans],
       },
     },
   },

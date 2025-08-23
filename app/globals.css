@@ -2635,3 +2635,25 @@
 }
 
 /*# sourceMappingURL=styles.css.map */
+
+
+/* Custom gradient for buttons */
+@layer components {
+  .btn-gradient {
+    background: linear-gradient(to bottom, #312E81, #1E1B4B);
+    color: white;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transition: all 200ms ease-in-out;
+  }
+  
+  .btn-gradient:hover {
+    background: linear-gradient(to bottom, #271F6B, #1A1A3A);
+  }
+}
+
+
+/* Override primary background to use our gradient */
+.bg-primary {
+  background: linear-gradient(to bottom, #312E81, #1E1B4B) !important;
+  color: white !important;
+}
